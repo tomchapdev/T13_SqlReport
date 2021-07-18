@@ -2,24 +2,13 @@
 #include <iostream>
 #include <sstream>
 
-#include "SFML/Graphics.hpp"
 #include "MyDB.h"
 #include "Utils.h"
 
-using namespace sf;
 using namespace std;
-
-
-
 
 int main()
 {
-	// Create the main window
-	RenderWindow window(VideoMode(1200, 800), "database");
-	sf::Font font;
-	if (!font.loadFromFile("data/fonts/comic.ttf"))
-		assert(false);
-
 	MyDB mydb;
 	mydb.Init("data/test.db");
 	//check table exists
@@ -48,7 +37,7 @@ int main()
 			"VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 )");
 		mydb.ExecQuery("SELECT * FROM COMPANY");
 	}
-
+	/*
 	//how many have a higher wage?
 	mydb.ExecQuery("SELECT COUNT(*) AS 'numHighEarners' FROM COMPANY WHERE SALARY > 20000");
 	stringstream ss;
@@ -86,38 +75,7 @@ int main()
 	for (size_t i = 0; i < mydb.results.size(); ++i) {
 		DebugPrint(mydb.GetStr(i, "NAME") + ":" + mydb.GetStr(i, "SALARY"));
 	}
-
+	*/
 	mydb.SaveToDisk();
 	mydb.Close();
-
-
-	Clock clock;
-	// Start the game loop 
-	while (window.isOpen())
-	{
-		bool fire = false;
-		// Process events
-		Event event;
-		while (window.pollEvent(event))
-		{
-			// Close window: exit
-			if (event.type == Event::Closed) 
-				window.close();
-		} 
-
-		// Clear screen
-		window.clear();
-
-		float elapsed = clock.getElapsedTime().asSeconds();
-		clock.restart();
-
-		sf::Text txt("Hello world", font, 30);
-		window.draw(txt);
-
-
-		// Update the window
-		window.display();
-	}
-
-	return EXIT_SUCCESS;
 }
