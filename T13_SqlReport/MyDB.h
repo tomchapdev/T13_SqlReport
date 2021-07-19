@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "..\..\sqlite\sqlite3.h"
+#include "..\..\..\sqlite\sqlite3.h"
 
 /*
 ** From the sqlite3 main site
@@ -59,7 +59,3 @@ struct MyDB {
 	//the callback is used to get results back from the database
 	int Callback(int numFields, char **arrValues, char **arrNames);
 };
-
-
-
-

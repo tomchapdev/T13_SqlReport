@@ -1,81 +1,122 @@
 #include <assert.h>
 #include <iostream>
+#include <windows.h>
 #include <sstream>
 
-#include "MyDB.h"
 #include "Utils.h"
+#include "myDB.h"
+
 
 using namespace std;
 
 int main()
 {
+	void TablesInChinook(MyDB db);
+	void FieldsInTable(MyDB db, string table);
+	void CustomerInfoForSurname(MyDB db, string name);
+	void MoneySpentBySurname(MyDB db, string name);
+	void MoneySpentByAllCustomers(MyDB db);
+
 	MyDB mydb;
-	mydb.Init("data/test.db");
-	//check table exists
-	mydb.ExecQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'COMPANY'");
-	if (mydb.results.empty())
-	{
-		mydb.ExecQuery("CREATE TABLE COMPANY("  \
-				"ID INT PRIMARY KEY     NOT NULL," \
-				"NAME           TEXT    NOT NULL," \
-				"AGE            INT     NOT NULL," \
-				"ADDRESS        CHAR(50)," \
-				"SALARY         FLOAT )");
-	}
-	//check data exists
-	mydb.ExecQuery("SELECT * FROM COMPANY");
-	if (mydb.results.empty())
-	{
-		//empty so add it
-		mydb.ExecQuery( "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "  \
-			"VALUES (1, 'Paul', 32, 'California', 20000.00 ); " \
-			"INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "  \
-			"VALUES (2, 'Allen', 25, 'Texas', 15000.00 ); "     \
-			"INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY)" \
-			"VALUES (3, 'Teddy', 23, 'Norway', 20000.00 );" \
-			"INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY)" \
-			"VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 )");
-		mydb.ExecQuery("SELECT * FROM COMPANY");
-	}
-	/*
-	//how many have a higher wage?
-	mydb.ExecQuery("SELECT COUNT(*) AS 'numHighEarners' FROM COMPANY WHERE SALARY > 20000");
-	stringstream ss;
-	assert(mydb.results.size() == 1);
-	ss << "Num high earners=" << mydb.results[0][0].value;
-	DebugPrint(ss.str(), "");
+	mydb.Init("chinook.db");
 
-	//get details for young and old staff
-	DebugPrint("Senior staff:");
-	mydb.ExecQuery("SELECT * FROM COMPANY WHERE AGE>=25");
-	for (size_t i = 0; i < mydb.results.size(); ++i)
-		DebugPrint(mydb.GetStr(i, "NAME"));
-	DebugPrint("Junior staff:");
-	mydb.ExecQuery("SELECT * FROM COMPANY WHERE AGE<25");
-	for (size_t i = 0; i < mydb.results.size(); ++i)
-		DebugPrint(mydb.GetStr(i, "NAME"));
+	TablesInChinook(mydb);
+	FieldsInTable(mydb, "invoices");
+	CustomerInfoForSurname(mydb, "'Gruber'");
+	MoneySpentBySurname(mydb, "'Gruber'");
+	MoneySpentByAllCustomers(mydb);
 
-	//ordered list of how earns the most
-	DebugPrint("Salary high scores:");
-	mydb.ExecQuery("SELECT ID, NAME, SALARY FROM COMPANY ORDER BY SALARY DESC");
-	for (size_t i = 0; i < mydb.results.size(); ++i) {
-		DebugPrint(mydb.GetStr(i, "NAME") + ":" + mydb.GetStr(i, "SALARY"));
-	}
-	//give the poorest member a rise
-	int lastRec = mydb.results.size() - 1;
-	DebugPrint("Let's give " + mydb.GetStr(lastRec, "NAME") + " a £10k pay rise");
-	ss.str("");
-	float salary = mydb.GetFloat(lastRec, "SALARY");
-	int ID = mydb.GetInt(lastRec, "ID");
-	ss << "UPDATE COMPANY SET SALARY = " << salary + 10000 << " WHERE ID=" << ID;
-	mydb.ExecQuery(ss.str());
-	//redo the list
-	DebugPrint("Salary high scores v2 - fair pay:");
-	mydb.ExecQuery("SELECT NAME, SALARY FROM COMPANY ORDER BY SALARY DESC");
-	for (size_t i = 0; i < mydb.results.size(); ++i) {
-		DebugPrint(mydb.GetStr(i, "NAME") + ":" + mydb.GetStr(i, "SALARY"));
-	}
-	*/
-	mydb.SaveToDisk();
 	mydb.Close();
+	
+	/*void ShowTableNames(sqlite3 * pdb);
+
+	sqlite3* db;
+	int rc = sqlite3_open("chinook.db", &db);
+	if (rc)
+	{
+		DebugPrint("Can't open database: ", sqlite3_errmsg(db));
+		assert(false);
+	}
+	else
+		DebugPrint("Opened chinook");
+
+	ShowTableNames(db);
+
+	sqlite3_close(db);*/
+
+	
+}
+
+//Prints the tables in chinook database
+void TablesInChinook(MyDB db)
+{
+	db.ExecQuery("SELECT tbl_name FROM sqlite_master WHERE type = 'table'");
+	DebugPrint("\nTables in Chinook");
+	for (size_t i = 0; i < db.results.size(); ++i)
+	{
+		MyDB::Row r = db.results[i];
+		for (size_t j = 0; j < r.size(); j++)
+		{
+			DebugPrint(r[j].value);
+		}
+	}
+}
+
+//Prints the fields in a given table
+void FieldsInTable(MyDB db, string table)
+{
+	db.ExecQuery("SELECT * FROM " + table);
+	DebugPrint("\nFields in " + table);
+	for (size_t i = 0; i < db.results[0].size(); ++i)
+	{
+			DebugPrint(db.results[0][i].name);
+	}
+}
+
+//Prints the customer info of a customer with given surname
+void CustomerInfoForSurname(MyDB db, string name)
+{
+	db.ExecQuery("SELECT * FROM 'customers' WHERE LastName = " + name);
+	DebugPrint("\nCustomer info for " + name);
+	for (size_t i = 0; i < db.results.size(); i++)
+	{
+		DebugPrint("Customer Info:");
+		for (size_t j = 0; j < db.results[i].size(); j++)
+		{
+			string str = db.results[i][j].name + ": " + db.results[i][j].value;
+			DebugPrint(str);
+		}
+	}
+}
+
+//Prints the money spent by a given surname, listed by date and total
+void MoneySpentBySurname(MyDB db, string name)
+{
+	db.ExecQuery("SELECT Total, InvoiceDate FROM customers INNER JOIN invoices ON customers.CustomerId = invoices.CustomerId WHERE LastName = " + name);
+	DebugPrint("\nMoney spent by " + name);
+	for (size_t i = 0; i < db.results.size(); i++)
+	{
+		string str = "£" + db.results[i][0].value + " - " + db.results[i][1].value;
+		DebugPrint(str);
+	}
+	db.ExecQuery("SELECT SUM(Total) FROM customers INNER JOIN invoices ON customers.CustomerId = invoices.CustomerId WHERE LastName = " + name);
+	string total = db.results[0][0].value;
+	DebugPrint("Final total=£" + total);
+}
+
+//Prints the 
+void MoneySpentByAllCustomers(MyDB db)
+{
+	db.ExecQuery("SELECT SUM(Total) TotalSpent, (FirstName || ' ' || LastName) AS Name FROM customers INNER JOIN invoices ON customers.CustomerId = invoices.CustomerId GROUP BY Name ORDER BY TotalSpent DESC");
+	DebugPrint("\nHow much each customer has been charged");
+	for (size_t i = 0; i < db.results.size(); i++)
+	{
+		string str = "£" + db.results[i][0].value + " - " + db.results[i][1].value;
+		DebugPrint(str);
+	}
+	db.ExecQuery("SELECT SUM(Total) FROM invoices");
+	int total = stof(db.results[0][0].value) * 100;
+	string pounds = to_string(total / 100);
+	string pence = to_string(total % 100);
+	DebugPrint("Final total=£" + pounds + "." + pence);
 }

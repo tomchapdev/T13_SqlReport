@@ -93,6 +93,7 @@ bool MyDB::ExecQuery(const string& query)
 {
 	results.clear();
 	char *zErrMsg = 0;
+	string q = query;
 	int rc = sqlite3_exec(pDB, query.c_str(), MyDB_callback, this, &zErrMsg);
 	if (rc != SQLITE_OK) {
 		DebugPrint("SQL error: ", zErrMsg);
