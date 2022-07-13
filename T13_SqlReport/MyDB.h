@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "..\..\..\sqlite\sqlite3.h"
+#include "../../../sqlite/sqlite3.h"
 
 /*
 ** From the sqlite3 main site
