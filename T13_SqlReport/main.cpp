@@ -98,7 +98,7 @@ void MoneySpentByAllCustomers(MyDB db)
 {
 	db.ExecQuery("SELECT SUM(Total) TotalSpent, (FirstName || ' ' || LastName) AS Name " \
 		"FROM customers INNER JOIN invoices ON customers.CustomerId = invoices.CustomerId GROUP BY Name ORDER BY TotalSpent DESC");
-	DebugPrint("\nHow much each customer has been charged: ");
+	DebugPrint("\nHow much each customer has been charged");
 
 	for (size_t i = 0; i < db.results.size(); i++)
 	{
